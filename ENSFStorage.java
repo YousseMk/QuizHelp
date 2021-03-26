@@ -28,7 +28,7 @@ public class ENSFStorage {
 
   // Return the fileName, which is a relative path
   public String getFileName() {
-      return this.fileName;
+      return this.DIR + "/" + this.fileName;
   }
   
 
@@ -40,14 +40,47 @@ public class ENSFStorage {
 
   // Add a data element to the end of the list
   public void addDataElement(String dataElement) {
+	  File theFile = new File(this.getFileName());
+//	  if(this.dataElements.size() == 0) {
+//		  this.dataElements.add(dataElement);
+//	  }
+	  String[] arr = this.asStringArray();
+	  int longest = 0;
+	  for(int i = 0; i < arr.length; i++) {
+		  if(arr[i].length() > longest) {
+			  longest = arr[i].length();
+		  }
+	  }
+	  
+//	  if((3 * longest) < dataElement.length()) {
+//		  System.exit(1);
+//	  }else {
+//		  this.dataElements.add(dataElement);
+//		  writeFile();
+//	  }
+	  
+	  this.dataElements.add(dataElement);
+	  
+	  if(this.fileName != null) {
+		  writeFile();
+	  }
+	  
+	  
+	  
+	  
   }
 
 
   // Given an element and an index, add the element to the list at that index, if it is in bounds.
   // If the file exists, keep it up-to-date
   public void addDataElement(String dataElement, int position) {
+	  File theFile = new File(this.getFileName());
+	  
 	  if(position >= 0 && this.dataElements != null && position < this.dataElements.size()) {
-		  this.dataElements.add(position, dataElement);
+		  this.dataElements.set(position, dataElement);
+		  if(theFile.exists()) {
+			  writeFile(this.getFileName());
+		  }
 	  }else {
 		  System.exit(1);
 	  }
@@ -56,7 +89,7 @@ public class ENSFStorage {
   // Read in the specified file by name.
   public void readFile(String fileName) {
     this.setFileName(fileName);
-    //this.readFile();
+    this.readFile();
   }
 
 
@@ -75,7 +108,7 @@ public class ENSFStorage {
     
     // Read in the file
     try {
-      file = new BufferedReader(new FileReader(this.fileName));
+      file = new BufferedReader(new FileReader(this.getFileName()));
       String tmp = new String();
       while ((tmp = file.readLine()) != null) {
          this.addDataElement(tmp);
@@ -111,7 +144,7 @@ public class ENSFStorage {
   public void cleanUp() {
     String absolute = System.getProperty("user.dir");
     File abs = new File(absolute);
-    File path = new File(abs, this.fileName);
+    File path = new File(abs, this.getFileName());
     cleanUp(path);
   }
 
@@ -146,7 +179,11 @@ public class ENSFStorage {
     }
 
     try {
-      file = new BufferedWriter(new FileWriter(this.fileName));
+    	if(fileName.contains(DIR)) {
+    		file = new BufferedWriter(new FileWriter(this.fileName));
+    	}else {
+    		file = new BufferedWriter(new FileWriter(this.getFileName()));
+    	}
 
       // For each element, convert to char array and write char array
       // Ensure array is padded to set length
